@@ -321,11 +321,27 @@
     const cropHeight = kind === "ring" ? 170 : 190;
     return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${cell * 384 + 8} ${cropY} 368 ${cropHeight}" preserveAspectRatio="none" overflow="hidden" pointer-events="none"><image href="./assets/jewelry-sheet.png" width="1536" height="1024"/></svg>`;
   }
-  function ringArt(type) {
-    return `<g class="jewel art" pointer-events="none">${jewelrySprite("ring", type, 193, 260, 55, 25.4)}</g>`;
+  // Anchors measured at the base of each ring finger and across each wrist.
+  // Right-hand values are local to its reflected coordinate system.
+  const jewelryPlacement = {
+    left: {
+      ring: { x: 181, y: 330, width: 64, height: 31 },
+      bracelet: { x: 163, y: 568, width: 224, height: 82 },
+    },
+    right: {
+      ring: { x: 182, y: 330, width: 64, height: 31 },
+      bracelet: { x: 162, y: 568, width: 224, height: 82 },
+    },
+  };
+  function wornJewelry(kind, type, hand) {
+    const { x, y, width, height } = jewelryPlacement[hand][kind];
+    return `<g class="jewel art" pointer-events="none">${jewelrySprite(kind, type, x, y, width, height)}</g>`;
   }
-  function braceletArt(type) {
-    return `<g class="jewel art" pointer-events="none">${jewelrySprite("bracelet", type, 169, 603, 166, 65)}</g>`;
+  function ringArt(type, hand) {
+    return wornJewelry("ring", type, hand);
+  }
+  function braceletArt(type, hand) {
+    return wornJewelry("bracelet", type, hand);
   }
   function jewelryPreview(kind, type) {
     return `<svg class="jewelry-preview" viewBox="0 0 100 60" aria-hidden="true">${jewelrySprite(kind, type, 2, 5, 96, kind === "ring" ? 44 : 49)}</svg>`;
@@ -701,9 +717,11 @@
       document.querySelector(`[data-nail="${id}"]`).innerHTML = nailArt(id);
     for (const hand of ["left", "right"]) {
       $(`ring-${hand}`).innerHTML =
-        state.ring?.hand === hand ? ringArt(state.ring.type) : "";
+        state.ring?.hand === hand ? ringArt(state.ring.type, hand) : "";
       $(`bracelet-${hand}`).innerHTML =
-        state.bracelet?.hand === hand ? braceletArt(state.bracelet.type) : "";
+        state.bracelet?.hand === hand
+          ? braceletArt(state.bracelet.type, hand)
+          : "";
     }
     renderStatus();
   }
