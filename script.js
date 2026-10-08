@@ -52,42 +52,61 @@
     ["pearl", "Жемчужный"],
     ["beads", "Цветные бусины"],
   ];
-  // Positions measured on the 1500 × 1050 hand illustration, expressed
-  // in the shared 1000 × 700 scene. Every nail and decoration scales together.
+  // Nail centers and separate width/length scales calibrated to the new
+  // illustration. Coordinates stay in the shared 1000 × 700 scene.
   const fingerConfig = [
     {
       key: "little",
       name: "Мизинец",
-      x: 145,
-      y: 236,
-      rotation: -3,
-      scale: 0.98,
+      x: 148.5,
+      y: 215,
+      rotation: 1,
+      sx: 0.8,
+      sy: 0.91,
     },
-    { key: "ring", name: "Безымянный", x: 214, y: 150, rotation: -2, scale: 1 },
-    { key: "middle", name: "Средний", x: 287, y: 111, rotation: 0, scale: 1.1 },
+    {
+      key: "ring",
+      name: "Безымянный",
+      x: 220,
+      y: 124,
+      rotation: 3,
+      sx: 0.94,
+      sy: 1.06,
+    },
+    {
+      key: "middle",
+      name: "Средний",
+      x: 286.5,
+      y: 83,
+      rotation: 0,
+      sx: 1.08,
+      sy: 1.08,
+    },
     {
       key: "index",
       name: "Указательный",
       x: 352,
-      y: 159,
+      y: 131,
       rotation: 2,
-      scale: 1,
+      sx: 1.02,
+      sy: 1.04,
     },
     {
       key: "thumb",
       name: "Большой",
-      x: 447,
-      y: 358,
-      rotation: 36,
-      scale: 0.95,
+      x: 456.5,
+      y: 354,
+      rotation: 23,
+      sx: 0.85,
+      sy: 0.94,
     },
   ];
   const rightOffsets = {
-    little: [0, -3],
-    ring: [0, 0],
-    middle: [2, 0],
-    index: [2, 0],
-    thumb: [4, 0],
+    little: [0, 0],
+    ring: [2, 0],
+    middle: [-2, 0],
+    index: [3, -1],
+    thumb: [-1, 0],
   };
   const ids = ["left", "right"].flatMap((hand) =>
     fingerConfig.map((f) => `${hand}-${f.key}`),
@@ -138,7 +157,7 @@
                     Number.isFinite(g.x) &&
                     Number.isFinite(g.y) &&
                     Math.abs(g.x) <= 20 &&
-                    Math.abs(g.y) <= 32,
+                    Math.abs(g.y) <= 35,
                 )
                 .slice(0, 15)
             : [],
@@ -152,7 +171,7 @@
                     Number.isFinite(p.x) &&
                     Number.isFinite(p.y) &&
                     Math.abs(p.x) <= 20 &&
-                    Math.abs(p.y) <= 32 &&
+                    Math.abs(p.y) <= 35 &&
                     [
                       "#d5a52c",
                       "#fff0a6",
@@ -222,7 +241,7 @@
     toastTimer = setTimeout(() => $("toast").classList.remove("visible"), 2600);
   }
   const nailPath =
-    "M -17 -14 Q -17 -28 0 -29 Q 17 -28 17 -14 L 18 17 Q 18 29 0 29 Q -18 29 -18 17 Z";
+    "M0 -35 C11 -35 17 -25 17 -11 L18 10 C18 22 10 30 0 30 C-10 30 -18 22 -18 10 L-17 -11 C-17 -25 -11 -35 0 -35Z";
   const handPath =
     "M180 720 L179 591 Q178 545 158 506 Q135 472 133 427 L119 267 Q117 211 148 210 Q177 208 180 247 L187 366 L188 174 Q188 130 218 130 Q248 130 248 174 L254 346 L256 139 Q255 94 286 94 Q317 94 317 139 L322 345 L324 183 Q324 141 354 141 Q384 141 384 183 L380 413 L421 350 Q440 321 459 342 Q481 364 461 396 L415 488 Q397 537 358 561 L350 720 Z";
   function star(x, y, r, color) {
@@ -289,33 +308,27 @@
     const n = state.nails[id];
     return `<g class="art" clip-path="url(#clip-${id})" pointer-events="none"><path d="${nailPath}" fill="${n.color || "transparent"}"/>${n.color ? `<path d="${nailPath}" fill="url(#polish-light)"/>` : ""}${designArt(n.design, n.color)}${n.particles.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="${p.r}" fill="${p.color}" opacity=".8"/>`).join("")}${n.gems.map(gemArt).join("")}${n.color ? `<path d="M-12 -19 Q-11 -25 -5 -25" fill="none" stroke="white" stroke-width="3.5" opacity=".65" stroke-linecap="round"/><path d="M-13 -14 L-13 -5" stroke="white" stroke-width="1.8" opacity=".3" stroke-linecap="round"/>` : ""}</g><path class="nail-border" d="${nailPath}" fill="none" stroke="#bb827c" stroke-width="1" opacity=".22" pointer-events="none"/><path class="hit" d="${nailPath}" fill="transparent"/>`;
   }
+  // Each decoration uses its own cell of the illustrated transparent sheet.
+  // Nested SVG viewports crop without modifying the original artwork; these
+  // same viewports work in the tool cards, on the hands and in PNG exports.
+  const jewelryCells = {
+    ring: { gold: 0, silver: 1, heart: 2, flower: 3 },
+    bracelet: { gold: 0, silver: 1, pearl: 2, beads: 3 },
+  };
+  function jewelrySprite(kind, type, x, y, width, height) {
+    const cell = jewelryCells[kind][type];
+    const cropY = kind === "ring" ? 210 : 660;
+    const cropHeight = kind === "ring" ? 170 : 190;
+    return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${cell * 384 + 8} ${cropY} 368 ${cropHeight}" preserveAspectRatio="none" overflow="hidden" pointer-events="none"><image href="./assets/jewelry-sheet.png" width="1536" height="1024"/></svg>`;
+  }
   function ringArt(type) {
-    const metal = type === "silver" ? "url(#silver)" : "url(#gold)";
-    let jewel =
-      type === "heart"
-        ? heart(219, 286, 8, "#e37fa1")
-        : type === "flower"
-          ? flower(219, 281, 8, "#fff4fa")
-          : `<path d="M219 271 L225 278 L219 286 L213 278Z" fill="${type === "silver" ? "#a5d7ee" : "#ebbbd1"}" stroke="white" stroke-width="1"/>`;
-    return `<g class="jewel art" pointer-events="none"><path d="M193 281 Q217 293 244 282" stroke="#8c645638" stroke-width="11" fill="none"/><path d="M193 278 Q217 289 244 279" stroke="${metal}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M195 276 Q218 286 242 277" stroke="#fff5bd" opacity=".65" stroke-width="2" fill="none"/>${jewel}</g>`;
+    return `<g class="jewel art" pointer-events="none">${jewelrySprite("ring", type, 193, 260, 55, 25.4)}</g>`;
   }
   function braceletArt(type) {
-    if (type === "gold" || type === "silver") {
-      const metal = type === "gold" ? "url(#gold)" : "url(#silver)";
-      return `<g class="jewel art" pointer-events="none"><path d="M181 620 Q265 649 351 620" stroke="#926b4b28" stroke-width="20" fill="none"/><path d="M181 616 Q265 644 351 616" stroke="${metal}" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M182 613 Q265 641 350 613" stroke="#fff7d1" stroke-width="3" fill="none" opacity=".65"/>${star(264, 636, 7, type === "gold" ? "#fff3b4" : "#f2f8ff")}</g>`;
-    }
-    return `<g class="jewel art" pointer-events="none"><path d="M183 617 Q266 646 349 617" stroke="#d6b2c0" stroke-width="3" fill="none"/>${Array.from(
-      { length: 14 },
-      (_, i) => {
-        const x = 183 + i * 12.8,
-          y = 618 + Math.sin((i / 13) * Math.PI) * 15;
-        const c =
-          type === "pearl"
-            ? "url(#pearl)"
-            : ["#ef9cb5", "#a895d8", "#8bcec2", "#f2d078"][i % 4];
-        return `<circle cx="${x}" cy="${y}" r="7.4" fill="${c}" stroke="#b597aa" stroke-width=".7"/><circle cx="${x - 2}" cy="${y - 2}" r="1.7" fill="white" opacity=".6"/>`;
-      },
-    ).join("")}</g>`;
+    return `<g class="jewel art" pointer-events="none">${jewelrySprite("bracelet", type, 169, 603, 166, 65)}</g>`;
+  }
+  function jewelryPreview(kind, type) {
+    return `<svg class="jewelry-preview" viewBox="0 0 100 60" aria-hidden="true">${jewelrySprite(kind, type, 2, 5, 96, kind === "ring" ? 44 : 49)}</svg>`;
   }
   function createTable() {
     $("table").innerHTML = `
@@ -337,7 +350,7 @@
       ${fingerConfig
         .map((f) => {
           const offset = hand === "right" ? rightOffsets[f.key] : [0, 0];
-          return `<g data-nail="${hand}-${f.key}" transform="translate(${f.x + offset[0]} ${f.y + offset[1]}) rotate(${f.rotation}) scale(${f.scale})" role="button" tabindex="0" aria-label="${hand === "left" ? "Левая" : "Правая"} рука: ${f.name.toLowerCase()}, нанести выбранный инструмент"></g>`;
+          return `<g data-nail="${hand}-${f.key}" transform="translate(${f.x + offset[0]} ${f.y + offset[1]}) rotate(${f.rotation}) scale(${f.sx} ${f.sy})" role="button" tabindex="0" aria-label="${hand === "left" ? "Левая" : "Правая"} рука: ${f.name.toLowerCase()}, нанести выбранный инструмент"></g>`;
         })
         .join("")}
       <g id="ring-${hand}"></g><g id="bracelet-${hand}"></g>
@@ -430,7 +443,7 @@
     }
   }
   function previewDesign(type) {
-    return `<svg viewBox="-24 -35 48 70" aria-hidden="true"><defs><clipPath id="preview-${type}"><path d="${nailPath}"/></clipPath></defs><g clip-path="url(#preview-${type})"><path d="${nailPath}" fill="#e88fad"/>${designArt(type, "#e88fad")}</g><path d="${nailPath}" fill="none" stroke="#ce8aa5"/></svg>`;
+    return `<svg viewBox="-24 -39 48 74" aria-hidden="true"><defs><clipPath id="preview-${type}"><path d="${nailPath}"/></clipPath></defs><g clip-path="url(#preview-${type})"><path d="${nailPath}" fill="#e88fad"/>${designArt(type, "#e88fad")}</g><path d="${nailPath}" fill="none" stroke="#ce8aa5"/></svg>`;
   }
   function optionButton(label, art, active, fn) {
     const b = document.createElement("button");
@@ -623,10 +636,7 @@
         }
         const g = grid(o);
         for (const [type, label] of collection) {
-          const art =
-            key === "ring"
-              ? `<svg viewBox="187 261 65 38" aria-hidden="true">${ringArt(type)}</svg>`
-              : `<svg viewBox="172 605 190 48" aria-hidden="true">${braceletArt(type)}</svg>`;
+          const art = jewelryPreview(key, type);
           g.append(
             optionButton(label, art, state[key]?.type === type, () => {
               change(

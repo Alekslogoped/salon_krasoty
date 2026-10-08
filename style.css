@@ -798,3 +798,14 @@ nav button[aria-pressed="true"] {
     padding-bottom: 3px;
   }
 }
+
+.option svg.jewelry-preview {
+  width: 70px;
+  height: 50px;
+}
+@media (max-height: 650px) and (min-width: 701px) {
+  .option svg.jewelry-preview {
+    width: 57px;
+    height: 43px;
+  }
+}
