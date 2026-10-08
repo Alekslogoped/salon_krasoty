@@ -704,3 +704,97 @@ dialog p {
     display: none;
   }
 }
+
+/* Illustrated salon: all artwork is local and follows the scene coordinates. */
+body {
+  background:
+    radial-gradient(ellipse at 12% 0%, #f9e2ee 0, transparent 45%),
+    radial-gradient(ellipse at 100% 70%, #eee7f8 0, transparent 40%), #fcf7fa;
+}
+.brand-icon {
+  background: linear-gradient(145deg, #fff7fb, #f3cddd);
+  border: 1px solid #ffffff;
+  box-shadow:
+    0 5px 14px #ad60841a,
+    inset 0 1px 0 white;
+}
+.workspace {
+  background: #fff9f5;
+  border-color: #e9d2dc;
+  box-shadow:
+    0 15px 45px #ad759c12,
+    inset 0 1px 0 white;
+}
+.stage-top {
+  padding-bottom: 8px;
+}
+.studio-label {
+  color: #9e6b88;
+}
+.badge {
+  background: #fffafa;
+  border-color: #ecd5e1;
+  color: #a0527d;
+}
+.panel-title {
+  background: linear-gradient(120deg, #fffaff, #fffdf7);
+}
+aside {
+  box-shadow: 0 15px 45px #aa709515;
+}
+.option {
+  background: linear-gradient(160deg, #fffefd, #faf6fc);
+  border-color: #f3e9f1;
+}
+.option:hover:not(:disabled) {
+  background: #fff1f8;
+  border-color: #e5bed4;
+}
+.option[aria-pressed="true"] {
+  background: linear-gradient(150deg, #fff6fb, #f9e3f0);
+  border-color: #cc74a1;
+}
+.option svg.bottle {
+  width: 46px;
+  height: 58px;
+  filter: drop-shadow(0 3px 2px #a96b8d12);
+}
+nav svg.tool-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+nav button span {
+  font-size: 10px;
+}
+nav button[aria-pressed="true"] {
+  background: linear-gradient(145deg, #fae3f0, #f3e6fa);
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+.primary {
+  background: linear-gradient(135deg, #d973a4, #b9518d);
+  box-shadow: 0 6px 15px #ba578f25;
+}
+.stage-actions {
+  background: linear-gradient(#fffaf7, #fdf5f8);
+  border-top: 1px solid #efe0e4;
+}
+.dialog-icon {
+  text-shadow: 0 4px 12px #ce78a640;
+}
+@media (max-height: 650px) and (min-width: 701px) {
+  nav svg.tool-icon {
+    width: 22px;
+    height: 22px;
+  }
+  nav button span {
+    font-size: 9px;
+  }
+  .option svg.bottle {
+    width: 33px;
+    height: 42px;
+  }
+  .stage-top {
+    padding-bottom: 3px;
+  }
+}
